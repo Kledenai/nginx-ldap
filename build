@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+base='docker.io/kledenai/nginx-ldap'
+version='v1.0.6'
+image="$base:$version"
+
+atexit() {
+	docker images -q -f dangling=true | xargs -r docker rmi
+}
+
+trap atexit INT TERM EXIT
+
+docker build \
+	--force-rm \
+	--no-cache \
+	--tag "$image" \
+	"$(dirname "$0")"
+
+docker push "$image"
+docker tag "$image" "$base:latest"
+docker push "$base:latest"
